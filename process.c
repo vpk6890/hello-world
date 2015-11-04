@@ -1,20 +1,44 @@
 #include "stdio.h"
 #include "sys/types.h"
-#include "string.h"
+#include "string.h"   
 #include "dirent.h"
-#include "regex.h"    
+#include "pthread.h"
 
 #define LOOP (100)
 
-void sum (){
-    printf("SUM\n");
+void RemoveSpaces(char* source)
+{
+	char* i = source;
+	char* j = source;
+	while(*j != 0)
+	{
+		*i = *j++;
+		if(*i != ' ')
+		i++;
+	}
+	*i = 0;
 }
 
-void lcm (){
+void sum (char command[]){
+	
+	char temp1[100] ;
+	char *temp2 = NULL;
+    printf("CAME\n");
+	if ( strstr(command,"(") != NULL && strstr(command,")") != NULL && strstr(command,",") != NULL ){
+		temp2 = strrchr (command, '(');
+		//memmove(temp1, temp2, strlen(temp2));
+		printf("the arguments is %s \n",temp1);
+	} 
+	else {
+		printf("Please enter proper parameters: sum(num1, num2, ... ) \n");
+	} 
+}
+
+void lcm (char command[]){
     printf("lcm");
 }
 
-void prime(){
+void prime(char command[]){
     printf("prime");
 }
 
@@ -48,52 +72,64 @@ void parentProcess(void){
     printf("parent Process is done\n");
 }
 
-int oprStrCmp(char opr[]){
-    
-     regex_t regex;
-     int reti;
-     char *c = NULL;
-     char msgbuf[100];
-     
-    /* Compile regular expression */
-    reti = regcomp(&regex, "^a[[:alnum:]]", 0);
-    if (reti) {
-        fprintf(stderr, "Could not compile regex\n");
-        exit(1);
-    }
-    
-    reti = regexec(&regex, "quit", 0, NULL, 0);
-    if (!reti) {
-        puts("Match");
-        return 1;
-    }
-    else if (reti == REG_NOMATCH) {
-        return 0;
-    }
-    else {
-        regerror(reti, &regex, msgbuf, sizeof(msgbuf));
-        fprintf(stderr, "Regex match failed: %s\n", msgbuf);
-        exit(1);
-    }
-
-    /* Free compiled regular expression if you want to use the regex_t again */
-    regfree(&regex);
-    
+int oprStrCmp( char *oprStr1, char *oprStr2 ){
+	
+	int strMatch = 0;
+	while( *oprStr1 != '\0' ){
+		if( *oprStr2 != ' ') {		
+			if ( *oprStr2 == *oprStr1 ) {
+				strMatch++;
+			}
+			else {
+				break;
+			}
+			oprStr1++;		
+		}
+		oprStr2++;
+	}
+	
+	if (strMatch == strlen(oprStr1)) {
+		return 1;
+	} 
+	return 0;
 }
 
 int oprStrCheck(char oprStr[]){
-     
-     regex_t regex;
-     int reti;
-     char *c = NULL;
-     char msgbuf[100];
-     int i;
-     char operations[10][10] = { {"quit"}, {"sum"}, {"lcm"}, {"bprime"} } ;
-        
-    /* Execute regular expression */
-    for ( i = 0 ; i < 4 ; i++ ) {
-        oprStrCmp(*(operations + i));
-    }
+   
+	char *subStrMatch = NULL;
+	int i,err;
+	pthread_t sumThread, lcmThread, bprimeThread;
+	
+	if ( strstr(oprStr,"sum") == oprStr) {		
+		err = pthread_create(&sumThread, NULL, &sum, NULL);
+		if ( err != 0 ){
+			printf("\ncan't create thread :[%s]", strerror(err));
+			exit(0);
+		}
+		pthread_join( sumThread, NULL);
+		printf("Matched\n");
+	}
+	// else if () {
+	
+	// }
+	// else if () {
+	
+	// }
+	else {
+		printf("Unavailable command. Please enter correct command.\n");
+	}
+    
+    // for ( i = 0 ; i < 4 ; i++ ) {
+		// if (oprStrCmp(opertions[i],optStr))
+		// {	
+			// *subStrMatch = opertions[i];
+			// printf("String match %s\n",optStr);
+			// return 1;
+		// }
+	// }
+	
+	
+	return 0;
     
 }
 
@@ -101,42 +137,47 @@ void main(void){
     
     pid_t pid;
     char userResponse[100];
-    pid = fork();
-    int strCmpVal = 0;
-    
+       
     do {
-    
-        //if () {
-            if ( pid == 0 ){
-                childProcess();
-                 exit(0);
-            }
-            else if ( pid > 0) {
-            
-                int returnStatus;    
-                waitpid(pid, &returnStatus, 0);  
-                
-                if (returnStatus == 0)  // Verify child process terminated without error.  
-                {
-                    printf("The child process terminated normally.");    
-                }
-
-                if (returnStatus == 1)      
-                {
-                    printf("The child process terminated with an error!.\n");   
-                    exit(0);
-                }
-                parentProcess();
-                
-            }
-            else {
-                printf("Child process was not created\n!!!!");
-                exit(0);
-            }
-
-        printf("user_account $> ");
+		printf("user_account $> ");
         gets(userResponse);
-        strCmpVal = oprStrCheck(userResponse);
-    }while( strCmpVal != 0) ;
+		RemoveSpaces(userResponse);
+		
+		if ( strstr(userResponse,"quit") != NULL) {
+			if (strcmp(userResponse,"quit") == 0) {
+				printf("bye\n");
+				break;
+			}
+			else {
+				printf("Unavailable command. Please enter correct command.\n");
+			}
+		} 
+		else 
+		{	
+			pid = fork();
+			if ( pid == 0 ){
+				//childProcess();
+				oprStrCheck(userResponse);
+				 exit(0);
+			}
+			else if ( pid > 0) {
+			
+				int returnStatus;    
+				waitpid(pid, &returnStatus, 0);  
+				
+				if (returnStatus == 1)      
+				{
+					printf("The child process terminated with an error!.\n");   
+					exit(0);
+				}
+				
+			}
+			else {
+				printf("Child process was not created\n!!!!");
+				exit(0);
+			}
+		}
+		
+    }while(1) ;
 
 }
