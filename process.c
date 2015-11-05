@@ -4,45 +4,168 @@
 #include "dirent.h"
 #include "pthread.h"
 
-#define LOOP (100)
+void removeChar(char *str, char charTobeRem ) {
 
-void RemoveSpaces(char* source)
-{
-	char* i = source;
-	char* j = source;
-	while(*j != 0)
-	{
-		*i = *j++;
-		if(*i != ' ')
-		i++;
-	}
-	*i = 0;
+    char *src, *dst;
+    for (src = dst = str; *src != '\0'; src++) {
+        *dst = *src;
+        if (*dst != charTobeRem) dst++;
+    }
+    *dst = '\0';
 }
 
+int getArgs(char *str, double args[]){
+	int noOfArgs = 0, i = 0;
+	char *token = strtok(str, ",");
+    while(token) {
+		args[i] = (double) atoi(token);
+		noOfArgs++;
+		i++;
+        token = strtok(NULL, ",");
+    }
+	return noOfArgs;
+}
+
+int getArgsInt(char *str, long int args[]){
+	int noOfArgs = 0, i = 0;
+	char *token = strtok(str, ",");
+    while(token) {
+		args[i] = (long int) atoi(token);
+		noOfArgs++;
+		i++;
+        token = strtok(NULL, ",");
+    }
+	return noOfArgs;
+}
+
+/* Add function*/
 void sum (char command[]){
-	
-	char temp1[100] ;
-	char *temp2 = NULL;
-    printf("CAME\n");
+
+	char *temp1 = NULL;
+	double sum = 0;
+	double args[1000]; 
+	int i, noOfParam = 0;
+   
 	if ( strstr(command,"(") != NULL && strstr(command,")") != NULL && strstr(command,",") != NULL ){
-		temp2 = strrchr (command, '(');
-		//memmove(temp1, temp2, strlen(temp2));
-		printf("the arguments is %s \n",temp1);
+		
+		temp1 = strrchr (command, '(');  // Getting substring which contains arguments.
+		removeChar(temp1,'('); 			 // Removing '('
+		removeChar(temp1,')'); 			 // Removing ')'
+		noOfParam = getArgs(temp1,args); // Getting number of arguments.
+		
+		if ( noOfParam > 1 ){
+			for( i = 0; i < noOfParam; i++) {
+				sum = sum + args[i];
+			}
+			printf("%lf\n",sum);
+			return ;
+		} 
+		else{
+			printf("Please enter proper parameters: sum(num1, num2, ... ) \n");
+			return ;
+		}
 	} 
 	else {
 		printf("Please enter proper parameters: sum(num1, num2, ... ) \n");
+		return ;
 	} 
 }
 
-void lcm (char command[]){
-    printf("lcm");
+long int lcmOpr(long int a, long int b){
+    long int temp = a;
+    do{
+         if(temp % b == 0 && temp % a == 0){
+			break;
+		 }
+         temp++;
+    }while(1);
+   return temp;
 }
 
-void prime(char command[]){
-    printf("prime");
+void lcm(char command[]){
+	
+	char *temp1 = NULL;
+	long int lcm = 0;
+	long int args[1000]; 
+	int i, noOfParam = 0;
+	
+	if ( strstr(command,"(") != NULL && strstr(command,")") != NULL && strstr(command,",") != NULL ){
+		
+		temp1 = strrchr (command, '(');      // Getting substring which contains arguments.
+		removeChar(temp1,'('); 			     // Removing '('
+		removeChar(temp1,')'); 			     // Removing ')'
+		noOfParam = getArgsInt(temp1,args);  // Getting number of arguments.
+		
+		if ( noOfParam > 1 ){
+		
+			lcm = args[0]; 
+			i = 1;
+			while( i < noOfParam){
+				if (lcm > args[i]) {
+					lcm = lcmOpr(lcm,args[i]);
+				}
+				else {
+					lcm = lcmOpr(args[i],lcm);
+				}
+				i++;
+			}
+			printf("%li\n",lcm);
+			return ;
+		} 
+		else{
+			printf("lcm should have minimum two parameters. Ex:- lcm(num1, num2, ... ) \n");
+			return ;
+		}
+	}
+	else{
+		printf("lcm should have minimum two parameters. Ex:- lcm(num1, num2, ... ) \n");
+		return ;
+	}
 }
 
-void ls(){
+void bprime(char command[])
+{
+	char *temp1 = NULL;
+	int i,noOfParam = 0;
+	long int args[1000];
+	int var, primeCheck ;
+	
+	if ( strstr(command,"(") != NULL && strstr(command,")") != NULL ){
+		temp1 = strrchr (command, '(');      // Getting substring which contains arguments.
+		removeChar(temp1,'('); 			     // Removing '('
+		removeChar(temp1,')'); 			     // Removing ')'
+		noOfParam = getArgsInt(temp1,args);  // Getting number of arguments.
+			
+		if (noOfParam > 0) {
+			for (i = 0; i < noOfParam; i++) { 
+				primeCheck = 1;
+				for ( var = 2 ; var <= (args[i] - 1) ; var++ )
+				{ 
+					if ( (args[i]%var) == 0 ) {
+						primeCheck = 0;
+						break;
+					}
+				}
+				if (primeCheck) {
+					printf("%d is a prime number \n",args[i]);
+				} 
+				else {
+					printf("%d is not a prime number \n",args[i]);
+				}
+			}
+		}
+		else {
+			printf("bprime must have atleat one parameter!!! For example bprime(num1, num2, ... )\n");
+			return;
+		}
+	}
+	else {
+		printf("bprime must have atleat one parameter!!! For example bprime(num1, num2, ... )\n");
+		return;
+	}
+}
+
+void ls(void){
     DIR *d;
     struct dirent *dir;
     d = opendir(".");
@@ -52,47 +175,11 @@ void ls(){
         {
             printf("%s\t", dir->d_name);
         }
+		printf("\n");
         closedir(d);
     }
 }
 
-void childProcess(void){
-    int i;
-    for ( i = 0; i < LOOP; i++){
-        printf("Child is running i is %d\n",i);
-    }
-    printf("Child Process is done\n");
-}
-
-void parentProcess(void){
-    int i;
-    for ( i = 0; i < LOOP; i++){
-        printf("parent is running i is %d\n",i);
-    }
-    printf("parent Process is done\n");
-}
-
-int oprStrCmp( char *oprStr1, char *oprStr2 ){
-	
-	int strMatch = 0;
-	while( *oprStr1 != '\0' ){
-		if( *oprStr2 != ' ') {		
-			if ( *oprStr2 == *oprStr1 ) {
-				strMatch++;
-			}
-			else {
-				break;
-			}
-			oprStr1++;		
-		}
-		oprStr2++;
-	}
-	
-	if (strMatch == strlen(oprStr1)) {
-		return 1;
-	} 
-	return 0;
-}
 
 int oprStrCheck(char oprStr[]){
    
@@ -101,47 +188,63 @@ int oprStrCheck(char oprStr[]){
 	pthread_t sumThread, lcmThread, bprimeThread;
 	
 	if ( strstr(oprStr,"sum") == oprStr) {		
-		err = pthread_create(&sumThread, NULL, &sum, NULL);
+		err = pthread_create(&sumThread, NULL, &sum, oprStr);
 		if ( err != 0 ){
 			printf("\ncan't create thread :[%s]", strerror(err));
 			exit(0);
 		}
 		pthread_join( sumThread, NULL);
-		printf("Matched\n");
 	}
-	// else if () {
-	
-	// }
-	// else if () {
-	
-	// }
+	else if ( strstr(oprStr,"lcm") == oprStr) {		
+		err = pthread_create(&sumThread, NULL, &lcm, oprStr);
+		if ( err != 0 ){
+			printf("\ncan't create thread :[%s]", strerror(err));
+			exit(0);
+		}
+		pthread_join( sumThread, NULL);
+	}
+	else if ( strstr(oprStr,"ls") == oprStr) {		
+		removeChar(oprStr,' ');
+		if (strcmp(oprStr,"ls") == 0) {
+			err = pthread_create(&sumThread, NULL, &ls, NULL);
+			if ( err != 0 ){
+				printf("\ncan't create thread :[%s]", strerror(err));
+				exit(0);
+			}
+			pthread_join( sumThread, NULL);
+		}
+		else {
+			printf("No parameter is required for ls command.\n");
+		}
+	}
+	else if ( strstr(oprStr,"bprime") == oprStr) {				
+		err = pthread_create(&sumThread, NULL, &bprime, oprStr);
+		if ( err != 0 ){
+			printf("\ncan't create thread :[%s]", strerror(err));
+			exit(0);
+		}
+		pthread_join( sumThread, NULL);
+	}
 	else {
 		printf("Unavailable command. Please enter correct command.\n");
 	}
-    
-    // for ( i = 0 ; i < 4 ; i++ ) {
-		// if (oprStrCmp(opertions[i],optStr))
-		// {	
-			// *subStrMatch = opertions[i];
-			// printf("String match %s\n",optStr);
-			// return 1;
-		// }
-	// }
-	
-	
-	return 0;
-    
+    return 0;
 }
 
 void main(void){
     
     pid_t pid;
     char userResponse[100];
-       
+	char userAccount[100] = "user_account";
+    
     do {
-		printf("user_account $> ");
+
+#if 0
+		*userAccount=getenv("USER");
+#endif	
+		printf("\n%s $> ", userAccount);
         gets(userResponse);
-		RemoveSpaces(userResponse);
+		removeChar(userResponse,' '); // Removing whitespace.
 		
 		if ( strstr(userResponse,"quit") != NULL) {
 			if (strcmp(userResponse,"quit") == 0) {
@@ -156,7 +259,6 @@ void main(void){
 		{	
 			pid = fork();
 			if ( pid == 0 ){
-				//childProcess();
 				oprStrCheck(userResponse);
 				 exit(0);
 			}
@@ -170,14 +272,11 @@ void main(void){
 					printf("The child process terminated with an error!.\n");   
 					exit(0);
 				}
-				
 			}
 			else {
 				printf("Child process was not created\n!!!!");
 				exit(0);
 			}
 		}
-		
     }while(1) ;
-
 }
