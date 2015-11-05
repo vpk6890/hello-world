@@ -3,6 +3,7 @@
 #include "string.h"   
 #include "dirent.h"
 #include "pthread.h"
+#include "stdlib.h"
 
 void removeChar(char *str, char charTobeRem ) {
 
@@ -18,7 +19,7 @@ int getArgs(char *str, double args[]){
 	int noOfArgs = 0, i = 0;
 	char *token = strtok(str, ",");
     while(token) {
-		args[i] = (double) atoi(token);
+		args[i] = atof(token);
 		noOfArgs++;
 		i++;
         token = strtok(NULL, ",");
@@ -38,7 +39,7 @@ int getArgsInt(char *str, long int args[]){
 	return noOfArgs;
 }
 
-/* Add function*/
+/* sum function*/
 void sum (char command[]){
 
 	char *temp1 = NULL;
@@ -70,6 +71,73 @@ void sum (char command[]){
 		return ;
 	} 
 }
+
+/* Multiply function*/
+void mul (char command[]){
+
+	char *temp1 = NULL;
+	double mul = 1;
+	double args[1000]; 
+	int i, noOfParam = 0;
+   
+	if ( strstr(command,"(") != NULL && strstr(command,")") != NULL && strstr(command,",") != NULL ){
+		
+		temp1 = strrchr (command, '(');  // Getting substring which contains arguments.
+		removeChar(temp1,'('); 			 // Removing '('
+		removeChar(temp1,')'); 			 // Removing ')'
+		noOfParam = getArgs(temp1,args); // Getting number of arguments.
+		
+		if ( noOfParam > 1 ){
+			for( i = 0; i < noOfParam; i++) {
+				mul = mul * args[i];
+			}
+			printf("%lf\n",mul);
+			return ;
+		} 
+		else{
+			printf("Please enter proper parameters: mul(num1, num2, ... ) \n");
+			return ;
+		}
+	} 
+	else {
+		printf("Please enter proper parameters: mul(num1, num2, ... ) \n");
+		return ;
+	} 
+}
+
+/* Subtract function*/
+void sub (char command[]){
+
+	char *temp1 = NULL;
+	double sub = 0;
+	double args[1000]; 
+	int i, noOfParam = 0;
+   
+	if ( strstr(command,"(") != NULL && strstr(command,")") != NULL && strstr(command,",") != NULL ){
+		
+		temp1 = strrchr (command, '(');  // Getting substring which contains arguments.
+		removeChar(temp1,'('); 			 // Removing '('
+		removeChar(temp1,')'); 			 // Removing ')'
+		noOfParam = getArgs(temp1,args); // Getting number of arguments.
+		
+		if ( noOfParam > 1 ){
+			for( i = 1; i < noOfParam; i++) {
+				sub = args[0] - args[i];
+				printf("%lf\n",sub);
+			}
+			return ;
+		} 
+		else{
+			printf("Please enter proper parameters: sub(num1, num2, ... ) \n");
+			return ;
+		}
+	} 
+	else {
+		printf("Please enter proper parameters: sub(num1, num2, ... ) \n");
+		return ;
+	} 
+}
+
 
 long int lcmOpr(long int a, long int b){
     long int temp = a;
@@ -123,14 +191,16 @@ void lcm(char command[]){
 	}
 }
 
+/* bprime function is for finding biggest prime number */
 void bprime(char command[])
 {
 	char *temp1 = NULL;
 	int i,noOfParam = 0;
 	long int args[1000];
-	int var, primeCheck ;
+	int var, primeCheck, bprime = 0;
 	
-	if ( strstr(command,"(") != NULL && strstr(command,")") != NULL ){
+	
+	if ( strstr(command,"(") != NULL && strstr(command,")") != NULL && strstr(command,",") != NULL ){
 		temp1 = strrchr (command, '(');      // Getting substring which contains arguments.
 		removeChar(temp1,'('); 			     // Removing '('
 		removeChar(temp1,')'); 			     // Removing ')'
@@ -147,11 +217,16 @@ void bprime(char command[])
 					}
 				}
 				if (primeCheck) {
-					printf("%d is a prime number \n",args[i]);
+					if (bprime < args[i]) {
+						bprime = args[i];
+					}
 				} 
-				else {
-					printf("%d is not a prime number \n",args[i]);
-				}
+			}
+			if (bprime != 0) {
+				printf("%d\n",bprime);
+			} 
+			else {
+				printf("None of the arguments are prime number!!!!\n");
 			}
 		}
 		else {
@@ -161,6 +236,141 @@ void bprime(char command[])
 	}
 	else {
 		printf("bprime must have atleat one parameter!!! For example bprime(num1, num2, ... )\n");
+		return;
+	}
+}
+
+/* sprime function is for finding smallest prime number */
+void sprime(char command[])
+{
+	char *temp1 = NULL;
+	int i,noOfParam = 0;
+	long int args[1000];
+	int var, primeCheck, sprime = -1;
+	
+	
+	if ( strstr(command,"(") != NULL && strstr(command,")") != NULL && strstr(command,",") != NULL ){
+		temp1 = strrchr (command, '(');      // Getting substring which contains arguments.
+		removeChar(temp1,'('); 			     // Removing '('
+		removeChar(temp1,')'); 			     // Removing ')'
+		noOfParam = getArgsInt(temp1,args);  // Getting number of arguments.
+			
+		if (noOfParam > 0) {
+			for (i = 0; i < noOfParam; i++) { 
+				primeCheck = 1;
+				for ( var = 2 ; var <= (args[i] - 1) ; var++ )
+				{ 
+					if ( (args[i]%var) == 0 ) {
+						primeCheck = 0;
+						break;
+					}
+				}
+				if (primeCheck) {
+					if ( sprime == -1) {
+						sprime = args[i];
+					} else {
+						if (sprime > args[i]) {
+							sprime = args[i];
+						}
+					} 
+				
+				} 
+			}
+			if (sprime != 0) {
+				printf("%d\n",sprime);
+			} 
+			else {
+				printf("None of the arguments are prime number!!!!\n");
+			}
+		}
+		else {
+			printf("sprime must have atleat one parameter!!! For example sprime(num1, num2, ... )\n");
+			return;
+		}
+	}
+	else {
+		printf("sprime must have atleat one parameter!!! For example sprime(num1, num2, ... )\n");
+		return;
+	}
+}
+
+/* Division function */
+void division(char command[])
+{
+	char *temp1 = NULL;
+	int i,noOfParam = 0;
+	double args[1000];
+		
+	if ( strstr(command,"(") != NULL && strstr(command,")") != NULL && strstr(command,",") != NULL){
+		temp1 = strrchr (command, '(');      // Getting substring which contains arguments.
+		removeChar(temp1,'('); 			     // Removing '('
+		removeChar(temp1,')'); 			     // Removing ')'
+		noOfParam = getArgs(temp1,args);  // Getting number of arguments.
+		if (noOfParam == 2) {
+			if (args[1] == 0) {
+				printf("Division by zero! Aborting!!!\n");
+				return;
+			}
+			else {
+				printf("%G\n", args[0]/args[1]);
+				return;
+			}
+		}
+		else if ( noOfParam < 2) {
+			printf("Div must have exactly have two parameters!!! For example div(num1, num2)\n");
+			return;
+		}
+		else {
+			printf("Div must have exactly have two parameters!!! For example div(num1, num2)\n");
+			return;
+		}
+	}
+	else {
+		printf("Div must have exactly have two parameters!!! For example div(num1, num2)\n");
+		return;
+	}
+	
+}
+
+/* GCD function */
+int gcd(int x, int y)
+{
+    int r;
+
+    if (x <= 0 || y <= 0) return(0);
+    while ((r = x % y) != 0)
+    {
+        x = y;
+        y = r;
+    }
+    return(y);
+}
+
+void gcdFunc(char command[])
+{
+	char *temp1 = NULL;
+	int i,noOfParam = 0;
+	long int args[1000];
+	int g;
+	if ( strstr(command,"(") != NULL && strstr(command,")") != NULL ){
+		temp1 = strrchr (command, '(');      // Getting substring which contains arguments.
+		removeChar(temp1,'('); 			     // Removing '('
+		removeChar(temp1,')'); 			     // Removing ')'
+		noOfParam = getArgsInt(temp1,args);  // Getting number of arguments.
+		if (noOfParam > 1) {
+			g = args[0];
+			for (i = 1; i < noOfParam; i++)
+				g = gcd(g, args[i]);
+			printf("%d\n",g);
+			return;
+		}
+		else {
+			printf("gcd must have minimum two number. For example gcd(num1, num2, ... )\n");
+			return;
+		}
+	}
+	else {
+		printf("gcd must have minimum two number. For example gcd(num1, num2, ... )\n");
 		return;
 	}
 }
@@ -191,7 +401,39 @@ int oprStrCheck(char oprStr[]){
 		err = pthread_create(&sumThread, NULL, &sum, oprStr);
 		if ( err != 0 ){
 			printf("\ncan't create thread :[%s]", strerror(err));
-			exit(0);
+			exit(EXIT_FAILURE);
+		}
+		pthread_join( sumThread, NULL);
+	}
+	else if ( strstr(oprStr,"mul") == oprStr) {		
+		err = pthread_create(&sumThread, NULL, &mul, oprStr);
+		if ( err != 0 ){
+			printf("\ncan't create thread :[%s]", strerror(err));
+			exit(EXIT_FAILURE);
+		}
+		pthread_join( sumThread, NULL);
+	}
+	else if ( strstr(oprStr,"sub") == oprStr) {		
+		err = pthread_create(&sumThread, NULL, &sub, oprStr);
+		if ( err != 0 ){
+			printf("\ncan't create thread :[%s]", strerror(err));
+			exit(EXIT_FAILURE);
+		}
+		pthread_join( sumThread, NULL);
+	}
+	else if ( strstr(oprStr,"div") == oprStr) {		
+		err = pthread_create(&sumThread, NULL, &division, oprStr);
+		if ( err != 0 ){
+			printf("\ncan't create thread :[%s]", strerror(err));
+			exit(EXIT_FAILURE);
+		}
+		pthread_join( sumThread, NULL);
+	}
+	else if ( strstr(oprStr,"gcd") == oprStr) {		
+		err = pthread_create(&sumThread, NULL, &gcdFunc, oprStr);
+		if ( err != 0 ){
+			printf("\ncan't create thread :[%s]", strerror(err));
+			exit(EXIT_FAILURE);
 		}
 		pthread_join( sumThread, NULL);
 	}
@@ -199,7 +441,7 @@ int oprStrCheck(char oprStr[]){
 		err = pthread_create(&sumThread, NULL, &lcm, oprStr);
 		if ( err != 0 ){
 			printf("\ncan't create thread :[%s]", strerror(err));
-			exit(0);
+			exit(EXIT_FAILURE);
 		}
 		pthread_join( sumThread, NULL);
 	}
@@ -209,7 +451,7 @@ int oprStrCheck(char oprStr[]){
 			err = pthread_create(&sumThread, NULL, &ls, NULL);
 			if ( err != 0 ){
 				printf("\ncan't create thread :[%s]", strerror(err));
-				exit(0);
+				exit(EXIT_FAILURE);
 			}
 			pthread_join( sumThread, NULL);
 		}
@@ -221,7 +463,15 @@ int oprStrCheck(char oprStr[]){
 		err = pthread_create(&sumThread, NULL, &bprime, oprStr);
 		if ( err != 0 ){
 			printf("\ncan't create thread :[%s]", strerror(err));
-			exit(0);
+			exit(EXIT_FAILURE);
+		}
+		pthread_join( sumThread, NULL);
+	}
+	else if ( strstr(oprStr,"sprime") == oprStr) {				
+		err = pthread_create(&sumThread, NULL, &sprime, oprStr);
+		if ( err != 0 ){
+			printf("\ncan't create thread :[%s]", strerror(err));
+			exit(EXIT_FAILURE);
 		}
 		pthread_join( sumThread, NULL);
 	}
