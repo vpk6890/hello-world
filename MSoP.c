@@ -457,7 +457,7 @@ void history(void){
 
 	int Counter;
 	for ( Counter = 0; Counter < *ArrayIndex; Counter++){
-		printf("!! %s\n",historyArray[Counter]);
+		printf("%s\n",historyArray[Counter]);
 	}
 }
 
